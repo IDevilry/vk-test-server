@@ -1,5 +1,8 @@
 import express from "express";
 import router from "./routes";
+import helmet from "helmet";
+import cors from "cors";
+import bodyParser from "body-parser";
 
 class App {
   public app: express.Application;
@@ -10,8 +13,10 @@ class App {
     this.routes();
   }
   private middleware(): void {
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(helmet());
+    this.app.use(cors());
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: true }));
   }
 
   private routes(): void {

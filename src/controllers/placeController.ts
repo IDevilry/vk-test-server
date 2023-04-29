@@ -37,12 +37,20 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
+      if (!req.params.id) {
+        res.status(400).send();
+        return;
+      }
       const place = await dbClient.place.findUnique({
         where: {
-          id_place: req.body.id_place,
+          id_place: Number(req.params.id),
         },
         include: includeFields(),
       });
+      if (!place) {
+        res.status(400).send();
+        return;
+      }
       res.send(place);
     } catch (error) {
       res.status(500).send("Server Error");
@@ -78,7 +86,7 @@ class PlaceController {
       });
       res.send(place);
     } catch (error) {
-      res.status(500).send("Не удалось добавить");
+      res.status(500).send("Server Error");
     }
   }
 
@@ -88,14 +96,18 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
+      if (!req.params.id) {
+        res.sendStatus(400);
+        return;
+      }
       const place = await dbClient.place.delete({
         where: {
-          id_place: req.body.id_place,
+          id_place: Number(req.params.id),
         },
       });
-      res.send(place.id_place);
+      res.send(String(place.id_place));
     } catch (error) {
-      res.status(500).send("Не удалось удалить");
+      res.status(500).send("Server Error");
     }
   }
 
@@ -105,9 +117,13 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
+      if (!req.params.id) {
+        res.sendStatus(400);
+        return;
+      }
       const updatedPlace = await dbClient.place.update({
         where: {
-          id_place: req.body.id_place,
+          id_place: Number(req.params.id),
         },
         data: {
           description: req.body.description,
@@ -119,7 +135,7 @@ class PlaceController {
       });
       res.send(updatedPlace);
     } catch (error) {
-      res.status(500).send("Error");
+      res.status(500).send("Server Error");
     }
   }
 }
