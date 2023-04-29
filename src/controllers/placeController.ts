@@ -60,6 +60,9 @@ class PlaceController {
           description: req.body.description,
           photo_url: req.body.photo_url,
           place_name: req.body.place_name,
+          address: req.body.address,
+          latitude: req.body.latitude,
+          longtitude: req.body.longitude,
           city: {
             create: {
               city_name: req.body.city_name,

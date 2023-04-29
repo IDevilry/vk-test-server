@@ -26,6 +26,9 @@ model Place {
   place_name  String
   description String
   photo_url   String
+  address     String?
+  latitude    Float?
+  longtitude  Float?
   city        City?  @relation(fields: [cityId], references: [id])
   cityId      Int?
 }
