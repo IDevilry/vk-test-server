@@ -1,4 +1,5 @@
 import express from "express";
+import router from "./routes";
 
 class App {
   public app: express.Application;
@@ -14,9 +15,7 @@ class App {
   }
 
   private routes(): void {
-    this.app.get("/", (req, res) => {
-      res.send("Hello World!");
-    });
+    this.app.use("/", router);
   }
 }
 
