@@ -32,7 +32,7 @@ class PlaceController extends Controller {
         include: this.includeFields(),
       });
       if (!place) {
-        res.status(400).send();
+        res.status(404).send();
         return;
       }
       res.send(place);
@@ -47,6 +47,14 @@ class PlaceController extends Controller {
     next: NextFunction
   ): Promise<void> {
     try {
+      const connectCityId = await dbClient.city.findFirst({
+        where: { city_name: req.body.city_name },
+        select: { id: true },
+      });
+      const countryId = await dbClient.country.findFirst({
+        where: { country_name: req.body.country_name },
+        select: { id: true },
+      });
       const place = await dbClient.place.create({
         data: {
           description: req.body.description,
@@ -56,17 +64,21 @@ class PlaceController extends Controller {
           latitude: req.body.latitude,
           longtitude: req.body.longitude,
           city: {
-            create: {
-              city_name: req.body.city_name,
-              country: {
-                create: {
-                  country_name: req.body.country_name,
+            connectOrCreate: {
+              where: { id: connectCityId?.id },
+              create: {
+                city_name: req.body.city_name,
+                country: {
+                  connectOrCreate: {
+                    where: { id: countryId?.id },
+                    create: { country_name: req.body.country_name },
+                  },
                 },
               },
             },
           },
+          include: this.includeFields(),
         },
-        include: this.includeFields(),
       });
       res.send(place);
     } catch (error) {

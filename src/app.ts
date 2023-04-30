@@ -1,8 +1,8 @@
 import express from "express";
-import router from "./routes";
 import helmet from "helmet";
 import cors from "cors";
 import bodyParser from "body-parser";
+import router from "./routes";
 
 class App {
   public app: express.Application;
