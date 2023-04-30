@@ -37,7 +37,7 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.params.id) {
+      if (!req.params.id || isNaN(Number(req.params.id))) {
         res.status(400).send();
         return;
       }
@@ -48,7 +48,7 @@ class PlaceController {
         include: includeFields(),
       });
       if (!place) {
-        res.status(400).send();
+        res.status(404).send();
         return;
       }
       res.send(place);
@@ -62,32 +62,40 @@ class PlaceController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    try {
-      const place = await dbClient.place.create({
-        data: {
-          description: req.body.description,
-          photo_url: req.body.photo_url,
-          place_name: req.body.place_name,
-          address: req.body.address,
-          latitude: req.body.latitude,
-          longtitude: req.body.longitude,
-          city: {
+    const connectCityId = await dbClient.city.findFirst({
+      where: { city_name: req.body.city_name },
+      select: { id: true },
+    });
+    const countryId = await dbClient.country.findFirst({
+      where: { country_name: req.body.country_name },
+      select: { id: true },
+    });
+    const place = await dbClient.place.create({
+      data: {
+        description: req.body.description,
+        photo_url: req.body.photo_url,
+        place_name: req.body.place_name,
+        address: req.body.address,
+        latitude: req.body.latitude,
+        longtitude: req.body.longitude,
+        city: {
+          connectOrCreate: {
+            where: { id: connectCityId?.id },
             create: {
               city_name: req.body.city_name,
               country: {
-                create: {
-                  country_name: req.body.country_name,
+                connectOrCreate: {
+                  where: { id: countryId?.id },
+                  create: { country_name: req.body.country_name },
                 },
               },
             },
           },
         },
-        include: includeFields(),
-      });
-      res.send(place);
-    } catch (error) {
-      res.status(500).send("Server Error");
-    }
+      },
+      include: includeFields(),
+    });
+    res.send(place);
   }
 
   public async deletePlace(
