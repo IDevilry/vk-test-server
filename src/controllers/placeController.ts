@@ -56,6 +56,7 @@ class PlaceController extends Controller {
         select: { id: true },
       });
       const place = await dbClient.place.create({
+        include: this.includeFields(),
         data: {
           description: req.body.description,
           photo_url: req.body.photo_url,
@@ -77,7 +78,6 @@ class PlaceController extends Controller {
               },
             },
           },
-          include: this.includeFields(),
         },
       });
       res.send(place);
