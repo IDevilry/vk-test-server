@@ -1,22 +1,9 @@
 import { Request, Response, NextFunction } from "express";
+import { Controller } from "./controller";
+
 import dbClient from "../database";
 
-const includeFields = () => {
-  return {
-    city: {
-      select: {
-        city_name: true,
-        country: {
-          select: {
-            country_name: true,
-          },
-        },
-      },
-    },
-  };
-};
-
-class PlaceController {
+class PlaceController extends Controller {
   public async getAllPlaces(
     req: Request,
     res: Response,
@@ -24,7 +11,7 @@ class PlaceController {
   ): Promise<void> {
     try {
       const places = await dbClient.place.findMany({
-        include: includeFields(),
+        include: this.includeFields(),
       });
       res.send(places);
     } catch (error) {
@@ -37,15 +24,12 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.params.id) {
-        res.status(400).send();
-        return;
-      }
+      this.checkIdParam(req, res, next);
       const place = await dbClient.place.findUnique({
         where: {
           id_place: Number(req.params.id),
         },
-        include: includeFields(),
+        include: this.includeFields(),
       });
       if (!place) {
         res.status(400).send();
@@ -82,7 +66,7 @@ class PlaceController {
             },
           },
         },
-        include: includeFields(),
+        include: this.includeFields(),
       });
       res.send(place);
     } catch (error) {
@@ -96,10 +80,7 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.params.id) {
-        res.sendStatus(400);
-        return;
-      }
+      this.checkIdParam(req, res, next);
       const place = await dbClient.place.delete({
         where: {
           id_place: Number(req.params.id),
@@ -117,10 +98,7 @@ class PlaceController {
     next: NextFunction
   ): Promise<void> {
     try {
-      if (!req.params.id) {
-        res.sendStatus(400);
-        return;
-      }
+      this.checkIdParam(req, res, next);
       const updatedPlace = await dbClient.place.update({
         where: {
           id_place: Number(req.params.id),
@@ -131,7 +109,7 @@ class PlaceController {
           place_name: req.body.place_name,
           cityId: req.body.cityId,
         },
-        include: includeFields(),
+        include: this.includeFields(),
       });
       res.send(updatedPlace);
     } catch (error) {
