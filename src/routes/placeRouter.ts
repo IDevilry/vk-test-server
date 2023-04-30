@@ -1,12 +1,15 @@
 import { Router } from "express";
 import { PlaceController } from "../controllers";
+import dbClient from "../database";
+
+const controller = new PlaceController(dbClient);
 
 const placeRouter = Router();
 
-placeRouter.get("/", PlaceController.getAllPlaces);
-placeRouter.get("/:id", PlaceController.getOnePlace);
-placeRouter.post("/new", PlaceController.newPlace);
-placeRouter.patch("/update/:id", PlaceController.updatePlace);
-placeRouter.delete("/delete/:id", PlaceController.deletePlace);
+placeRouter.get("/", controller.getAllPlaces);
+placeRouter.get("/:id", controller.getOnePlace);
+placeRouter.post("/new", controller.newPlace);
+placeRouter.patch("/update/:id", controller.updatePlace);
+placeRouter.delete("/delete/:id", controller.deletePlace);
 
 export { placeRouter };

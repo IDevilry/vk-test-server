@@ -1,88 +1,63 @@
 import { Request, Response, NextFunction } from "express";
-import { Controller } from "./controller";
+import { places } from "../types";
+import { Prisma, PrismaClient } from "@prisma/client";
 
-import dbClient from "../database";
+class PlaceController {
+  static prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    never,
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >;
 
-class PlaceController extends Controller {
+  constructor(
+    prisma: PrismaClient<
+      Prisma.PrismaClientOptions,
+      never,
+      Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+    >
+  ) {
+    PlaceController.prisma = prisma;
+  }
+
   public async getAllPlaces(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const places = await dbClient.place.findMany({
-        include: this.includeFields(),
-      });
-      res.send(places);
+      const places = await PlaceController.prisma.place.findMany({});
+      res.status(200).json(places);
     } catch (error) {
-      res.status(500).send("Server Error");
+      res.status(500).json("Произошла ошибка");
     }
   }
+
   public async getOnePlace(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      this.checkIdParam(req, res, next);
-      const place = await dbClient.place.findUnique({
+      if (!req.params?.id) {
+        res.status(400).json("ID is not exists");
+        return;
+      }
+      const place = await PlaceController.prisma.place.findFirst({
         where: {
           id_place: Number(req.params.id),
         },
-        include: this.includeFields(),
       });
+
       if (!place) {
-        res.status(404).send();
+        res.status(404).json("Не найдено");
         return;
       }
-      res.send(place);
-    } catch (error) {
-      res.status(500).send("Server Error");
-    }
-  }
 
-  public async newPlace(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> {
-    try {
-      const connectCityId = await dbClient.city.findFirst({
-        where: { city_name: req.body.city_name },
-        select: { id: true },
-      });
-      const countryId = await dbClient.country.findFirst({
-        where: { country_name: req.body.country_name },
-        select: { id: true },
-      });
-      const place = await dbClient.place.create({
-        include: this.includeFields(),
-        data: {
-          description: req.body.description,
-          photo_url: req.body.photo_url,
-          place_name: req.body.place_name,
-          address: req.body.address,
-          latitude: req.body.latitude,
-          longtitude: req.body.longitude,
-          city: {
-            connectOrCreate: {
-              where: { id: connectCityId?.id },
-              create: {
-                city_name: req.body.city_name,
-                country: {
-                  connectOrCreate: {
-                    where: { id: countryId?.id },
-                    create: { country_name: req.body.country_name },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
-      res.send(place);
+      res.status(200).json(place);
+      return;
     } catch (error) {
-      res.status(500).send("Server Error");
+      console.log(error);
+      res.status(500).json("Произошла ошибка");
     }
   }
 
@@ -92,15 +67,56 @@ class PlaceController extends Controller {
     next: NextFunction
   ): Promise<void> {
     try {
-      this.checkIdParam(req, res, next);
-      const place = await dbClient.place.delete({
+      if (!req.params?.id) {
+        res.status(400).json("ID is not exists");
+        return;
+      }
+      const place = await PlaceController.prisma.place.delete({
         where: {
           id_place: Number(req.params.id),
         },
+        select: {
+          id_place: true,
+        },
       });
-      res.send(String(place.id_place));
+
+      if (!place) {
+        res.status(404).json("Не найдено");
+        return;
+      }
+
+      res.status(200).json(place);
     } catch (error) {
-      res.status(500).send("Server Error");
+      console.log(error);
+      res.status(500).json("Произошла ошибка");
+    }
+  }
+
+  public async newPlace(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const missingFields = places.filter((field) => !req.body[field]);
+      if (missingFields.length > 0) {
+        res.status(400).json({
+          message: `Missing fields: ${missingFields.join(", ")}`,
+        });
+        return;
+      }
+
+      const newPlace = await PlaceController.prisma.place.create({
+        data: req.body,
+        select: {
+          id_place: true,
+        },
+      });
+
+      res.status(201).json(newPlace);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Произошла ошибка");
     }
   }
 
@@ -110,24 +126,37 @@ class PlaceController extends Controller {
     next: NextFunction
   ): Promise<void> {
     try {
-      this.checkIdParam(req, res, next);
-      const updatedPlace = await dbClient.place.update({
+      const missingFields = places.filter((field) => !req.body[field]);
+      if (missingFields.length > 0) {
+        res.status(400).json({
+          message: `Missing fields: ${missingFields.join(", ")}`,
+        });
+        return;
+      }
+
+      if (!req.params?.id) {
+        res.status(400).json("ID is not exists");
+        return;
+      }
+
+      const place = await PlaceController.prisma.place.update({
         where: {
           id_place: Number(req.params.id),
         },
-        data: {
-          description: req.body.description,
-          photo_url: req.body.photo_url,
-          place_name: req.body.place_name,
-          cityId: req.body.cityId,
-        },
-        include: this.includeFields(),
+        data: req.body,
       });
-      res.send(updatedPlace);
+
+      if (!place) {
+        res.status(404).json("Не найдено");
+        return;
+      }
+
+      res.status(201).json(place);
     } catch (error) {
-      res.status(500).send("Server Error");
+      console.log(error);
+      res.status(500).json("Произошла ошибка");
     }
   }
 }
 
-export default new PlaceController();
+export default PlaceController;
