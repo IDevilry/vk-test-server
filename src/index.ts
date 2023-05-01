@@ -5,9 +5,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ?? 3000;
 
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     await dbClient.$connect();
     app.listen(PORT, () => {
@@ -19,4 +19,4 @@ const start = async () => {
   }
 };
 
-start();
+void start();

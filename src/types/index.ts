@@ -1,13 +1,13 @@
-export type Place = {
-  place_name: string;
-  description: string;
-  photo_url: string;
-  address: string;
-  latitude: number;
-  longtitude: number;
-  city_name: string;
-  country_name: string;
-};
+export interface Place {
+  place_name: string
+  description: string
+  photo_url: string
+  address: string
+  latitude: number
+  longtitude: number
+  city_name: string
+  country_name: string
+}
 
 export const places = [
   "place_name",

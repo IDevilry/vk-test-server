@@ -4,25 +4,23 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import router from "./routes";
 
-
-
 class App {
   public app: express.Application;
 
-  constructor() {
+  constructor () {
     this.app = express();
     this.middleware();
     this.routes();
   }
-  private middleware(): void {
+
+  private middleware (): void {
     this.app.use(helmet());
     this.app.use(cors());
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
-
   }
 
-  private routes(): void {
+  private routes (): void {
     this.app.use("/", router);
   }
 }

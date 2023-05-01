@@ -1,28 +1,29 @@
-import { Request, Response, NextFunction } from "express";
+import { type Request, type Response, type NextFunction } from "express";
+import { type Prisma, type PrismaClient } from "@prisma/client";
+
 import { places } from "../types";
-import { Prisma, PrismaClient } from "@prisma/client";
 
 class PlaceController {
   static prisma: PrismaClient<
+  Prisma.PrismaClientOptions,
+  never,
+  Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >;
+
+  constructor (
+    prisma: PrismaClient<
     Prisma.PrismaClientOptions,
     never,
     Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
-  >;
-
-  constructor(
-    prisma: PrismaClient<
-      Prisma.PrismaClientOptions,
-      never,
-      Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
-    >
+    >,
   ) {
     PlaceController.prisma = prisma;
   }
 
-  public async getAllPlaces(
+  public async getAllPlaces (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const places = await PlaceController.prisma.place.findMany({});
@@ -32,10 +33,10 @@ class PlaceController {
     }
   }
 
-  public async getOnePlace(
+  public async getOnePlace (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       if (!req.params?.id) {
@@ -61,10 +62,10 @@ class PlaceController {
     }
   }
 
-  public async deletePlace(
+  public async deletePlace (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       if (!req.params?.id) {
@@ -92,10 +93,10 @@ class PlaceController {
     }
   }
 
-  public async newPlace(
+  public async newPlace (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const missingFields = places.filter((field) => !req.body[field]);
@@ -120,10 +121,10 @@ class PlaceController {
     }
   }
 
-  public async updatePlace(
+  public async updatePlace (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const missingFields = places.filter((field) => !req.body[field]);

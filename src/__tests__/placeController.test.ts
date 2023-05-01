@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { PlaceController } from "../controllers";
 import { prismaMock } from "../__mocks__/mockPrisma";
-import { Request, Response } from "express";
+import { type Request, type Response } from "express";
 
 describe("Place Controller", () => {
-  const mockResponse = () => {
+  const mockResponse = (): Response => {
     const res = {} as unknown as Response;
     res.status = jest.fn().mockReturnThis();
     res.json = jest.fn();
@@ -22,7 +23,7 @@ describe("Place Controller", () => {
         city_name: "test",
         country_name: "test",
       },
-    } as Request;
+    } as unknown as Request;
     if (params?.id) {
       req.params = {
         id: params.id,
@@ -93,7 +94,7 @@ describe("Place Controller", () => {
         city_name: "test",
         country_name: "test",
       },
-    } as Request;
+    } as unknown as Request;
     await controller.newPlace(req, res, () => {});
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
@@ -117,7 +118,7 @@ describe("Place Controller", () => {
         city_name: "test",
         country_name: "test",
       },
-    } as Request;
+    } as unknown as Request;
     await controller.updatePlace(req, res, () => {});
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
