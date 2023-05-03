@@ -37,10 +37,12 @@ class App {
 	}
 
 	private database = async (): Promise<void> => {
-		await this.prisma.$connect();
-		this.prisma.$on("beforeExit", async () => {
-			await this.prisma.$disconnect();
-		});
+		try {
+			await this.prisma.$connect();
+			this.prisma.$on("beforeExit", async () => {
+				await this.prisma.$disconnect();
+			});
+		} catch {}
 	};
 
 	private errorHandlers(): void {
