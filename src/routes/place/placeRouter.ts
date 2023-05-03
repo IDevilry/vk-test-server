@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { PlaceController } from "../controllers";
-import dbClient from "../database";
+import { PlaceController } from "../../controllers";
+import dbClient from "../../database";
 
 const controller = new PlaceController(dbClient);
 
