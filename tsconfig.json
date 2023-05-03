@@ -8,12 +8,5 @@
 		"strict": true,
 		"skipLibCheck": true
 	},
-	"exclude": [
-		"node_modules",
-		"dist",
-		"coverage",
-		"prisma",
-		"./src/__mocks__/*",
-		"./src/**/*.test.ts"
-	]
+	"exclude": ["node_modules", "dist", "coverage"]
 }
