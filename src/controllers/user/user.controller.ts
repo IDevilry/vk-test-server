@@ -1,91 +1,89 @@
-import { type NextFunction, type Request, type Response } from "express";
-import { type User } from "@prisma/client";
-
-import Controller from "../controller";
+import Controller from "../baseController";
 import APIException from "../../errors/api.exception";
 
+import { type NextFunction, type Request, type Response } from "express";
+import { type UserApiFields } from "../../types";
+import { type User } from "@prisma/client";
+
 class UserController extends Controller {
-	public async getAllUsers(
+	public getAllUsers = async (
 		req: Request,
 		res: Response<User[]>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
 			const users = await this.prisma.user.findMany({});
 
 			res.status(200).json(users);
-		} catch {
-			next(new APIException(500, "Internal server error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 
-	public async getUser(
+	public getUser = async (
 		req: Request<{ id: string }>,
 		res: Response<User>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			if (!req.params.id) {
-				next(new APIException(400, "ID is not provided"));
-				return;
-			}
+			this.checkParamsAndThrow(req.params, ["id"], {
+				name: "Bad Request",
+				message: "ID is not provided",
+				status: 400,
+			});
 			const user = await this.prisma.user.findUnique({
 				where: { id_user: Number(req.params.id) },
 			});
 			if (!user) {
-				next(new APIException(404, "User not found"));
-				return;
+				throw new APIException(404, "Not Found", "User not found");
 			}
 			res.status(200).json(user);
-		} catch {
-			next(new APIException(500, "Internal server error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 
-	public async deleteUser(
+	public deleteUser = async (
 		req: Request<{ id: string }>,
 		res: Response<{ id_user: number }>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			if (!req.params.id) {
-				next(new APIException(400, "ID is not provided"));
-				return;
-			}
+			this.checkParamsAndThrow(req.params, ["id"], {
+				name: "Bad Request",
+				message: "ID is not provided",
+				status: 400,
+			});
 			const user = await this.prisma.user.delete({
 				where: {
 					id_user: Number(req.params.id),
 				},
 			});
 			if (!user) {
-				next(new APIException(404, "User not found"));
-				return;
+				throw new APIException(404, "Not Found", "User not found");
 			}
 			res.status(200).json(user);
-		} catch {
-			next(new APIException(500, "Internal server error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 
-	public async newUser(
-		req: Request<unknown, unknown, User>,
+	public newUser = async (
+		req: Request<unknown, unknown, UserApiFields>,
 		res: Response<User>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			if (!req.body.email || !req.body.name || !req.body.password) {
-				next(new APIException(400, "Email, name and password are required"));
-				return;
-			}
+			this.checkBodyAndThrow(req.body, ["name", "email", "password"]);
 			const user = await this.prisma.user.create({
 				data: req.body,
 			});
 
 			res.status(201).json(user);
-		} catch {
-			next(new APIException(500, "Internal server error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 }
 
 export default UserController;

@@ -1,3 +1,5 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+
 export interface Place {
 	[index: string]: any;
 	id_place: number;
@@ -29,3 +31,15 @@ export interface Review {
 	place: Place;
 	user: User;
 }
+
+export interface UserApiFields {
+	name: string;
+	email: string;
+	password: string;
+}
+
+export type PsimaClient = PrismaClient<
+Prisma.PrismaClientOptions,
+never,
+Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+>;

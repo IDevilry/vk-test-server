@@ -1,7 +1,8 @@
+import Controller from "../baseController";
+import APIException from "../../errors/api.exception";
+
 import { type Request, type Response, type NextFunction } from "express";
 import { type Place } from "../../types";
-import Controller from "../controller";
-import APIException from "../../errors/api.exception";
 
 const places = [
 	"place_name",
@@ -15,119 +16,114 @@ const places = [
 ];
 
 class PlaceController extends Controller {
-	public async getAllPlaces(
+	public getAllPlaces = async (
 		req: Request,
 		res: Response<Place[] | string>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
 			const places = await this.prisma.place.findMany({});
 			res.status(200).json(places);
 		} catch {
-			next(new APIException(500, "Internal Server Error"));
+			next(new APIException(500, "Error", "Internal Server Error"));
 		}
-	}
+	};
 
-	public async getOnePlace(
+	public getOnePlace = async (
 		req: Request<{ id: string }>,
 		res: Response<Place>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			if (!req.params?.id) {
-				next(new APIException(400, "ID is not provided"));
-				return;
-			}
-			const place = await this.prisma.place.findUniqueOrThrow({
+			this.checkParamsAndThrow(req.params, ["id"], {
+				name: "Bad Request",
+				status: 400,
+				message: "ID is not provided",
+			});
+
+			const place = await this.prisma.place.findUnique({
 				where: {
 					id_place: Number(req.params.id),
 				},
 			});
 
 			if (!place) {
-				next(new APIException(404, "Place not found"));
-				return;
+				throw new APIException(404, "Not Found", "Place not found");
 			}
 
 			res.status(200).json(place);
-			return;
-		} catch {
-			next(new APIException(500, "Internal Server Error"));
+		} catch (error: Error | any) {
+			next(new APIException(error.status, error?.name, error.message));
 		}
-	}
+	};
 
-	public async deletePlace(
+	public deletePlace = async (
 		req: Request<{ id: string }>,
 		res: Response<{ id_place: number }>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			if (!req.params?.id) {
-				next(new APIException(400, "ID is not provided"));
-				return;
-			}
-			const place = await this.prisma.place.delete({
+			this.checkParamsAndThrow(req.params, ["id"], {
+				name: "Bad Request",
+				status: 400,
+				message: "ID is not provided",
+			});
+
+			const place = await this.prisma.place.findUnique({
 				where: {
 					id_place: Number(req.params.id),
-				},
-				select: {
-					id_place: true,
 				},
 			});
 
 			if (!place) {
-				next(new APIException(404, "Place not found"));
-				return;
+				throw new APIException(404, "Not Found", "Place not found");
+			} else {
+				const del = await this.prisma.place.delete({
+					where: {
+						id_place: Number(req.params.id),
+					},
+					select: {
+						id_place: true,
+					},
+				});
+
+				res.status(200).json(del);
 			}
-
-			res.status(200).json(place);
-		} catch {
-			next(new APIException(500, "Internal Server Error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 
-	public async newPlace(
+	public newPlace = async (
 		req: Request<unknown, unknown, Place>,
 		res: Response<Place>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			const missingFields = places.filter((field) => !req.body[field]);
-			if (missingFields.length > 0) {
-				next(
-					new APIException(400, `Missing fields: ${missingFields.join(", ")}`)
-				);
-				return;
-			}
-
+			this.checkBodyAndThrow(req.body, places);
 			const newPlace = await this.prisma.place.create({
 				data: req.body,
 			});
 
 			res.status(201).json(newPlace);
-		} catch {
-			next(new APIException(500, "Internal Server Error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 
-	public async updatePlace(
+	public updatePlace = async (
 		req: Request<{ id: string }, unknown, Place>,
 		res: Response<Place>,
 		next: NextFunction
-	): Promise<void> {
+	): Promise<void> => {
 		try {
-			const missingFields = places.filter((field) => !req.body[field]);
-			if (missingFields.length > 0) {
-				next(
-					new APIException(400, `Missing fields: ${missingFields.join(", ")}`)
-				);
-				return;
-			}
+			this.checkParamsAndThrow(req.params, ["id"], {
+				name: "Bad Request",
+				message: "ID is not provided",
+				status: 400,
+			});
 
-			if (!req.params?.id) {
-				next(new APIException(400, "ID is not provided"));
-				return;
-			}
+			this.checkBodyAndThrow(req.body, places);
 
 			const place = await this.prisma.place.update({
 				where: {
@@ -137,15 +133,14 @@ class PlaceController extends Controller {
 			});
 
 			if (!place) {
-				next(new APIException(404, "Place not found"));
-				return;
+				throw new APIException(404, "Not Found", "Place not found");
 			}
 
 			res.status(201).json(place);
-		} catch {
-			next(new APIException(500, "Internal Server Error"));
+		} catch (error: Error | any) {
+			next(new APIException(error?.status, error?.name, error?.message));
 		}
-	}
+	};
 }
 
 export default PlaceController;
