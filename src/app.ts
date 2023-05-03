@@ -6,7 +6,8 @@ import router from "./routes";
 import errorMiddleware from "./middlewares/error.middleware";
 
 import { type PsimaClient } from "./types";
-import dbClient from "./database";
+import { prismaMock } from "./__mocks__/mockPrisma";
+// import dbClient from "./database";
 
 class App {
 	public app: express.Application;
@@ -51,4 +52,4 @@ class App {
 	}
 }
 
-export default new App(dbClient);
+export default new App(prismaMock);
