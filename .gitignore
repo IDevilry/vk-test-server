@@ -3,5 +3,3 @@
 /coverage/
 
 *.env*
-
-prisma/migrations/

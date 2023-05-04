@@ -1,14 +1,12 @@
 import { Router } from "express";
-import { UserController } from "../../controllers";
-import dbClient from "../../database";
-
-const controller = new UserController(dbClient);
+import userController from "../../controllers/userController";
 
 const userRouter = Router();
 
-userRouter.get("/", controller.getAllUsers);
-userRouter.get("/:id", controller.getUser);
-userRouter.post("/new", controller.newUser);
-userRouter.delete("/delete/:id", controller.deleteUser);
+userRouter.get("/", userController.getAllUsers);
+userRouter.get("/:id", userController.getUser);
+userRouter.patch("/update/:id", userController.updateUser);
+userRouter.post("/togglefriend", userController.toggleFriend);
+userRouter.delete("/delete/:id");
 
 export { userRouter };

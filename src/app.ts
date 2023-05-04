@@ -1,57 +1,50 @@
+import mongoose from "mongoose";
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import bodyParser from "body-parser";
-import router from "./routes";
-import errorMiddleware from "./middlewares/error.middleware";
 
-import { type PsimaClient } from "./types";
+import * as dotenv from "dotenv";
+import { authRouter } from "./routes/auth/authRouter";
+import { userRouter } from "./routes/user/userRouter";
+import { postRouter } from "./routes/post/postRouter";
 
-import dbClient from "./database";
+dotenv.config();
+
+const DB_HOST = process.env.DB_HOST ?? "";
 
 class App {
-	public app: express.Application;
-	public prisma: PsimaClient;
+  public app: express.Application;
 
-	constructor(prima: PsimaClient) {
-		this.prisma = prima;
-		this.app = express();
-		this.database();
-		this.middleware();
-		this.routes();
-		this.errorHandlers();
-	}
+  constructor() {
+    this.app = express();
+    this.middleware();
+    this.routes();
+  }
 
-	public start(): void {
-		const PORT = process.env.PORT || 3000;
-		this.app.listen(PORT, () => {
-			console.log(`Server started on http://localhost:${PORT}`);
-		});
-	}
+  public start(): void {
+    const PORT = process.env.PORT || 3000;
+    this.app.listen(PORT, () => {
+      console.log(`Server started on http://localhost:${PORT}`);
+    });
+  }
 
-	private middleware(): void {
-		this.app.use(helmet());
-		this.app.use(cors());
-		this.app.use(bodyParser.json());
-		this.app.use(bodyParser.urlencoded({ extended: true }));
-	}
+  private middleware(): void {
+    this.app.use(helmet());
+    this.app.use(cors());
+    this.app.use(bodyParser.json());
+    this.app.use(bodyParser.urlencoded({ extended: true }));
+  }
 
-	private database = async (): Promise<void> => {
-		try {
-			await this.prisma.$connect();
-			this.prisma.$on("beforeExit", async () => {
-				await this.prisma.$disconnect();
-			});
-		} catch {}
-	};
-
-	private errorHandlers(): void {
-		this.app.use(errorMiddleware);
-	}
-
-	private routes(): void {
-		this.app.use("/", router);
-	}
+  private routes(): void {
+    this.app.use("/auth", authRouter);
+    this.app.use("/users", userRouter);
+    this.app.use("/posts", postRouter);
+  }
 }
 
-export default new App(dbClient);
+mongoose.connect(DB_HOST).then(() => {
+  console.log("Connected to database");
+});
+
+export default new App();
