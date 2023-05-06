@@ -7,6 +7,7 @@ export interface IUser {
   profile_photo?: string;
   city?: string;
   institution?: string;
+  description?: string;
 }
 
 export interface IPost {

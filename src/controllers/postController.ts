@@ -1,8 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { IPost } from "../types";
+import jwt from "jsonwebtoken";
+import * as dotenv from "dotenv";
 import Post from "../models/post";
 import User from "../models/user";
 import mongoose from "mongoose";
+
+dotenv.config();
+
+const JWT_KEY = process.env.JWT_KEY ?? "";
 
 class PostController {
   public getAllPosts = async (
@@ -16,7 +22,8 @@ class PostController {
       const posts = await Post.find({})
         .skip(offset)
         .limit(Number(limit))
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .populate("user", { password: 0 });
 
       const totalCount = await Post.count({});
       res.status(200).send({ totalCount, countOnPage: posts.length, posts });
@@ -38,6 +45,27 @@ class PostController {
       res.status(200).send(post);
     } catch (error: Error | any) {
       res.status(404).send(error.message);
+    }
+  };
+  public getMyPosts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      const userId = jwt.verify(token || "", JWT_KEY, (err, decoded) => {
+        if (err) {
+          throw new Error(err.message);
+        }
+        return decoded;
+      }) as unknown as unknown as { id: string };
+      const posts = await Post.find({ user: userId?.id }).sort({
+        createdAt: -1,
+      });
+      res.status(200).send({ posts, totalCount: posts.length });
+    } catch (error: Error | any) {
+      res.status(400).send(error.message);
     }
   };
   public updatePost = async (
@@ -76,8 +104,8 @@ class PostController {
         { new: true, fields: { password: 0 } }
       );
       res.status(201).send({ post, user });
-    } catch (error) {
-      res.status(500).send();
+    } catch (error: Error | any) {
+      res.status(400).send(error.message);
     }
   };
   public toggleLike = async (

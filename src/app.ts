@@ -23,7 +23,7 @@ class App {
   }
 
   public start(): void {
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 1337;
     this.app.listen(PORT, () => {
       console.log(`Server started on http://localhost:${PORT}`);
     });

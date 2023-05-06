@@ -30,6 +30,9 @@ const UserSchema = new mongoose.Schema(
     institution: {
       type: String,
     },
+    description: {
+      type: String,
+    },
     posts: [
       {
         type: mongoose.Types.ObjectId,
@@ -45,6 +48,7 @@ const UserSchema = new mongoose.Schema(
     friends: [
       {
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
   },

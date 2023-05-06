@@ -1,7 +1,13 @@
-import { NextFunction, Request, Response } from "express";
-import User from "../models/user";
-import { IUser } from "../types";
 import mongoose from "mongoose";
+import User from "../models/user";
+import jwt from "jsonwebtoken";
+import * as dotenv from "dotenv";
+import { type NextFunction, type Request, type Response } from "express";
+import { type IUser } from "../types";
+
+dotenv.config();
+
+const JWT_KEY = process.env.JWT_KEY ?? "";
 
 class UserController {
   public getUser = async (
@@ -13,11 +19,14 @@ class UserController {
       if (!req.params?.id) {
         throw new Error("ID передан некорректно");
       }
-      const user = await User.findById(req.params.id, { password: 0 });
+      const user = await User.findById(req.params.id, { password: 0 }).populate(
+        "posts"
+      );
       if (!user) {
         throw new Error(`Пользователь с ${req.params.id} не существует`);
       }
-      res.status(200).send(user);
+
+      res.status(200).send({ user, totalCount: user.posts.length });
     } catch (error: Error | any) {
       res.status(400).send(error.message);
     }
@@ -67,7 +76,7 @@ class UserController {
     req: Request<{}, {}, { userId: string; targetId: string }>,
     res: Response,
     next: NextFunction
-  ) => {
+  ): Promise<void> => {
     try {
       const { userId, targetId } = req.body;
       if (!userId || !targetId || userId === targetId) {
@@ -109,7 +118,7 @@ class UserController {
           { new: true }
         );
       }
-      res.status(200).send();
+      res.status(200).send({ targetUser, currentUser: user });
     } catch (error: Error | any) {
       res.status(400).send(error.message);
     }
@@ -118,7 +127,7 @@ class UserController {
     req: Request<{ id: string }>,
     res: Response,
     next: NextFunction
-  ) => {
+  ): Promise<void> => {
     try {
       const { id } = req.params;
       const user = await User.findByIdAndDelete(id);
@@ -128,6 +137,48 @@ class UserController {
       res.status(200).send(user?._id);
     } catch (error: Error | any) {
       res.status(400).send(error.message);
+    }
+  };
+  public getMe = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      const userId = jwt.verify(token || "", JWT_KEY, (err, decoded) => {
+        if (err) {
+          throw new Error(err.message);
+        }
+        return decoded;
+      }) as unknown as unknown as { id: string };
+      const user = await User.findById(userId?.id, { password: 0 });
+      res.status(200).send(user);
+    } catch (error: Error | any) {
+      res.status(400).send(error.message);
+    }
+  };
+  public getFriends = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      const userId = jwt.verify(token || "", JWT_KEY, (err, decoded) => {
+        if (err) {
+          throw new Error(err.message);
+        }
+        return decoded;
+      }) as unknown as unknown as { id: string };
+
+      const user = await User.findById(userId?.id, {
+        friends: 1,
+      }).populate("friends");
+
+      res.status(200).send({ user, totalCount: user?.friends.length });
+    } catch (error: Error | any) {
+      res.send(400).send(error.message);
     }
   };
 }
