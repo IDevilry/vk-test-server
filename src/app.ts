@@ -64,7 +64,9 @@ class App {
     this.app.use(
       express.static(path.resolve(__dirname, "..", "static"), {
         setHeaders(res) {
-          res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+          res.writeHead(200, {
+            "Cross-Origin-Resource-Policy": "cross-origin",
+          });
         },
       })
     );
