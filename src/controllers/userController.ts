@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
+import fileUpload from "express-fileupload";
+import path from "path";
 import * as dotenv from "dotenv";
-import { type NextFunction, type Request, type Response } from "express";
+
+import { v4 } from "uuid";
 import { type IUser } from "../types";
+import { type NextFunction, type Request, type Response } from "express";
 
 dotenv.config();
 
@@ -58,14 +62,22 @@ class UserController {
       throw new Error();
     }
     try {
-      const user = await User.findByIdAndUpdate(id, req.body, {
+      console.log(req.files);
+      const image: fileUpload.UploadedFile | any = req.files?.profile_photo;
+      const imageName = `${v4()}.jpg`;
+      image?.mv(path.resolve(__dirname, "..", "..", "static", imageName));
+
+      const userToUpdate = req.body;
+      userToUpdate.profile_photo = imageName || "";
+
+      const user = await User.findByIdAndUpdate(id, userToUpdate, {
         fields: {
           password: 0,
         },
         new: true,
       });
       if (!user) {
-        throw new Error(`Пост с ID ${id} не существует`);
+        throw new Error(`Пользователь с ID ${id} не существует`);
       }
       res.status(201).send(user);
     } catch (error: Error | any) {
@@ -174,7 +186,7 @@ class UserController {
 
       const user = await User.findById(userId?.id, {
         friends: 1,
-      }).populate("friends");
+      }).populate({ path: "friends", populate: { path: "posts" } });
 
       res.status(200).send({ user, totalCount: user?.friends.length });
     } catch (error: Error | any) {

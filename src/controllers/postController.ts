@@ -1,10 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { IPost } from "../types";
+
+import path from "node:path";
+import { v4 } from "uuid";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 import Post from "../models/post";
 import User from "../models/user";
 import mongoose from "mongoose";
+import fileUpload from "express-fileupload";
+import { UploadedFile } from "express-fileupload";
+import { request } from "node:http";
 
 dotenv.config();
 
@@ -95,7 +101,17 @@ class PostController {
     next: NextFunction
   ) => {
     try {
-      const post = await Post.create(req.body);
+      const { content, title, user: author } = req.body;
+      const image: fileUpload.UploadedFile | any = req.files?.image;
+      const imageName = `${v4()}.jpg`;
+      image?.mv(path.resolve(__dirname, "..", "..", "static", imageName));
+
+      const post = await Post.create({
+        content,
+        user: author,
+        title,
+        image: imageName || "",
+      });
       const user = await User.findByIdAndUpdate(
         req.body.user,
         {
