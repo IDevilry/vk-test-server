@@ -60,7 +60,7 @@ class App {
 
   private middleware(): void {
     this.app.use(helmet());
-    this.app.use(cors());
+    this.app.use(cors({ origin: CLIENT_HOST }));
     this.app.use(
       express.static(path.resolve(__dirname, "..", "static"), {
         setHeaders(res) {
