@@ -62,7 +62,7 @@ class App {
     // this.app.use(helmet({ crossOriginResourcePolicy: true }));
     this.app.use(cors());
     this.app.use(
-      express.static(path.resolve(__dirname, "..", "static"), {
+      express.static(path.resolve(__dirname, "static"), {
         setHeaders(res) {
           res.writeHead(200, {
             "Cross-Origin-Resource-Policy": "cross-origin",
