@@ -41,7 +41,7 @@ class App {
     this.io = new Server(this.httpServer, {
       cors: {
         origin: CLIENT_HOST,
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PATCH", "DELETE"],
       },
     });
     this.middleware();
@@ -61,11 +61,6 @@ class App {
   private middleware(): void {
     // this.app.use(helmet({ crossOriginResourcePolicy: true }));
     this.app.use(cors());
-    this.app.use((req, res, next) => {
-      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
-      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      next();
-    });
     this.app.use(
       express.static(path.resolve(__dirname, "..", "static"), {
         setHeaders(res) {
@@ -79,6 +74,11 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(fileupload());
+    this.app.use((req, res, next) => {
+      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      next();
+    });
   }
 
   private routes(): void {
