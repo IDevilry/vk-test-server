@@ -119,7 +119,12 @@ class PostController {
         },
         { new: true, fields: { password: 0 } }
       );
-      res.status(201).send({ post, user });
+
+      res.writeHead(201, {
+        "Access-Control-Allow-Origin": req.headers.origin,
+      });
+
+      res.send({ post, user });
     } catch (error: Error | any) {
       res.status(400).send(error.message);
     }
