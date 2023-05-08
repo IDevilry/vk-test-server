@@ -59,13 +59,18 @@ class App {
   }
 
   private middleware(): void {
-    this.app.use(helmet());
-    this.app.use(cors({ origin: CLIENT_HOST }));
+    this.app.use(helmet({ crossOriginResourcePolicy: true }));
+    this.app.use(cors());
+    this.app.use((req, res, next) => {
+      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
+      next();
+    });
     this.app.use(
       express.static(path.resolve(__dirname, "..", "static"), {
         setHeaders(res) {
           res.writeHead(200, {
             "Cross-Origin-Resource-Policy": "cross-origin",
+            "Access-Control-Allow-Origin": CLIENT_HOST,
           });
         },
       })
