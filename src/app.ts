@@ -59,32 +59,6 @@ class App {
   }
 
   private middleware(): void {
-    this.app.use(express.static("build"));
-    this.app.use((req, res, next) => {
-      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PATCH, DELETE, OPTIONS"
-      );
-      next();
-    });
-
-    this.app.options("/*", (req, res, next) => {
-      res.header("Access-Control-Allow-Origin", CLIENT_HOST);
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PATCH, DELETE, OPTIONS"
-      );
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Authorization, Origin, X-Requested-With, Content-Type, Accept"
-      );
-      res.sendStatus(200);
-    });
     this.app.use(
       cors({
         origin: CLIENT_HOST,
@@ -92,23 +66,19 @@ class App {
         allowedHeaders: ["Authorization", "Content-Type"],
       })
     );
+    this.app.use(express.static("build"));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use(
-      fileupload({
-        headers: {
-          "access-control-allow-origin": CLIENT_HOST,
-        },
-      })
-    );
+    this.app.use(fileupload());
   }
 
   private routes(): void {
-    this.app.use("/auth", authRouter);
-    this.app.use("/users", userRouter);
-    this.app.use("/posts", postRouter);
-    this.app.use("/chats", chatRouter);
-    this.app.use("/messages", messageRouter);
+    this.app.use("/api/auth", authRouter);
+    this.app.use("/api/users", userRouter);
+    this.app.use("/api/posts", postRouter);
+    this.app.use("/api/chats", chatRouter);
+    this.app.use("/api/messages", messageRouter);
+    this.app.use("/*", express.static("build"));
   }
 
   public socket(): void {
