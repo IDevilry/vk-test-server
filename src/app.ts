@@ -59,7 +59,7 @@ class App {
   }
 
   private middleware(): void {
-    this.app.use(express.static("dist"));
+    this.app.use(express.static("build"));
     this.app.use((req, res, next) => {
       res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
       res.setHeader(
