@@ -59,6 +59,7 @@ class App {
   }
 
   private middleware(): void {
+    this.app.use(express.static("dist"));
     this.app.use((req, res, next) => {
       res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
       res.setHeader(
@@ -91,7 +92,6 @@ class App {
         allowedHeaders: ["Authorization", "Content-Type"],
       })
     );
-    this.app.use(express.static("dist"));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(
