@@ -104,7 +104,7 @@ class PostController {
       const { content, title, user: author } = req.body;
       const image: fileUpload.UploadedFile | any = req.files?.image;
       const imageName = `${v4()}.jpg`;
-      image?.mv(path.resolve(__dirname, "..", "..", "public", imageName));
+      image?.mv(path.resolve(__dirname, "..", "public", imageName));
 
       const post = await Post.create({
         content,
@@ -119,8 +119,6 @@ class PostController {
         },
         { new: true, fields: { password: 0 } }
       );
-
-      res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
 
       res.status(201).send({ post, user });
     } catch (error: Error | any) {

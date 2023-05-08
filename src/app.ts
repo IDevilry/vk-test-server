@@ -84,7 +84,6 @@ class App {
       );
       res.sendStatus(200);
     });
-    // this.app.use(helmet({ crossOriginResourcePolicy: true }));
     this.app.use(
       cors({
         origin: CLIENT_HOST,
