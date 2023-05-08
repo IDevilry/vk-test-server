@@ -94,7 +94,13 @@ class App {
     this.app.use(express.static(path.resolve(__dirname, "public")));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use(fileupload());
+    this.app.use(
+      fileupload({
+        headers: {
+          "access-control-allow-origin": CLIENT_HOST,
+        },
+      })
+    );
   }
 
   private routes(): void {
