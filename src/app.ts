@@ -9,7 +9,6 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 
 import * as dotenv from "dotenv";
-import path from "node:path";
 
 import { authRouter } from "./routes/auth/authRouter";
 import { userRouter } from "./routes/user/userRouter";
@@ -25,7 +24,6 @@ const DB_HOST = process.env.DB_HOST ?? "";
 const CLIENT_HOST = process.env.CLIENT_HOST ?? "";
 
 const PORT = process.env.PORT ?? 1337;
-const SOCKET_PORT = process.env.SOCKET_PORT ?? 4000;
 
 class App {
   public app: express.Application;
@@ -38,23 +36,15 @@ class App {
   constructor() {
     this.app = express();
     this.httpServer = createServer(this.app);
-    this.io = new Server(this.httpServer, {
-      cors: {
-        origin: CLIENT_HOST,
-        methods: ["GET", "POST", "PATCH", "DELETE"],
-      },
-    });
+    this.io = new Server(this.httpServer);
     this.middleware();
     this.routes();
     this.socket();
   }
 
   public start(): void {
-    this.httpServer.listen(SOCKET_PORT, () => {
-      console.log(`Socket IO started on port ${SOCKET_PORT}`);
-    });
-    this.app.listen(PORT, () => {
-      console.log(`Server started on http://localhost:${PORT}`);
+    this.httpServer.listen(PORT, () => {
+      console.log(`Server started on ${PORT}`);
     });
   }
 
