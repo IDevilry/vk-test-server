@@ -60,7 +60,13 @@ class App {
 
   private middleware(): void {
     // this.app.use(helmet({ crossOriginResourcePolicy: true }));
-    this.app.use(cors());
+    this.app.use(
+      cors({
+        origin: CLIENT_HOST,
+        methods: ["GET", "POST", "PATCH", "DELETE"],
+        allowedHeaders: ["Authorization", "Content-Type"],
+      })
+    );
     this.app.use(
       express.static(path.resolve(__dirname, "public"), {
         setHeaders(res) {
