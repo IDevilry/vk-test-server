@@ -104,7 +104,7 @@ class PostController {
       const { content, title, user: author } = req.body;
       const image: fileUpload.UploadedFile | any = req.files?.image;
       const imageName = `${v4()}.jpg`;
-      image?.mv(path.resolve(__dirname, "..", "..", "static", imageName));
+      image?.mv(path.resolve(__dirname, "..", "..", "public", imageName));
 
       const post = await Post.create({
         content,

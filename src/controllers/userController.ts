@@ -65,7 +65,7 @@ class UserController {
       console.log(req.files);
       const image: fileUpload.UploadedFile | any = req.files?.profile_photo;
       const imageName = `${v4()}.jpg`;
-      image?.mv(path.resolve(__dirname, "..", "..", "static", imageName));
+      image?.mv(path.resolve(__dirname, "..", "..", "public", imageName));
 
       const userToUpdate = req.body;
       userToUpdate.profile_photo = imageName || "";
