@@ -59,10 +59,11 @@ class App {
   }
 
   private middleware(): void {
-    this.app.use(helmet({ crossOriginResourcePolicy: true }));
+    // this.app.use(helmet({ crossOriginResourcePolicy: true }));
     this.app.use(cors());
     this.app.use((req, res, next) => {
       res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
       next();
     });
     this.app.use(
