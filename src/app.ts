@@ -59,6 +59,31 @@ class App {
   }
 
   private middleware(): void {
+    this.app.use((req, res, next) => {
+      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      );
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PATCH, DELETE, OPTIONS"
+      );
+      next();
+    });
+
+    this.app.options("/*", (req, res, next) => {
+      res.header("Access-Control-Allow-Origin", CLIENT_HOST);
+      res.header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PATCH, DELETE, OPTIONS"
+      );
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Authorization, Origin, X-Requested-With, Content-Type, Accept"
+      );
+      res.sendStatus(200);
+    });
     // this.app.use(helmet({ crossOriginResourcePolicy: true }));
     this.app.use(
       cors({
@@ -67,30 +92,10 @@ class App {
         allowedHeaders: ["Authorization", "Content-Type"],
       })
     );
-    this.app.use(
-      express.static(path.resolve(__dirname, "public"), {
-        setHeaders(res) {
-          res.writeHead(200, {
-            "Cross-Origin-Resource-Policy": "cross-origin",
-            "Access-Control-Allow-Origin": CLIENT_HOST,
-          });
-        },
-      })
-    );
+    this.app.use(express.static(path.resolve(__dirname, "public")));
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use(
-      fileupload({
-        headers: {
-          "access-control-allow-origin": CLIENT_HOST,
-        },
-      })
-    );
-    this.app.use((req, res, next) => {
-      res.setHeader("Access-Control-Allow-Origin", CLIENT_HOST);
-      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-      next();
-    });
+    this.app.use(fileupload());
   }
 
   private routes(): void {
