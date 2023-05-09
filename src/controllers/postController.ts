@@ -104,7 +104,7 @@ class PostController {
       const { content, title, user: author } = req.body;
       const image: fileUpload.UploadedFile | any = req.files?.image;
       const imageName = `${v4()}.jpg`;
-      image?.mv(path.resolve(__dirname, "..", "..", "build",  imageName));
+      image?.mv(path.resolve(__dirname, "..", "..", "build", imageName));
 
       const post = await Post.create({
         content,
@@ -162,6 +162,20 @@ class PostController {
       res.status(200).send("success");
     } catch (error: Error | any) {
       res.status(400).send(error.message);
+    }
+  };
+  public deletePost = async (
+    req: Request<{ postId: string }>,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      
+      const post = await Post.findByIdAndDelete(req.params.postId);
+
+      res.status(200).send(post?._id);
+    } catch (error: Error | any) {
+      res.status(404).send(error.message);
     }
   };
 }
