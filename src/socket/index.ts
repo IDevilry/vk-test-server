@@ -37,9 +37,8 @@ export function subOnDisconnect(
   socket: Socket,
   activeUsers: IUserWithSocket[]
 ) {
-  socket.on("userDisconnected", () => {
-    activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
-
+  socket.on("userDisconnected", (disconUser: IUserWithSocket) => {
+    activeUsers = activeUsers.filter((user) => user._id !== disconUser._id);
     this.io.emit("getUsers", activeUsers);
   });
 }

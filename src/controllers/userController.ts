@@ -62,7 +62,6 @@ class UserController {
       throw new Error();
     }
     try {
-      console.log(req.files);
       const image: fileUpload.UploadedFile | any = req.files?.profile_photo;
       const imageName = `${v4()}.jpg`;
       image?.mv(path.resolve(__dirname, "..", "..", "build", imageName));
@@ -190,7 +189,7 @@ class UserController {
 
       res.status(200).send({ user, totalCount: user?.friends.length });
     } catch (error: Error | any) {
-      res.send(400).send(error.message);
+      res.status(400).send(error.message);
     }
   };
 }

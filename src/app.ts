@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import express from "express";
-import helmet from "helmet";
 import cors from "cors";
 import bodyParser from "body-parser";
 import fileupload from "express-fileupload";
@@ -36,7 +35,11 @@ class App {
   constructor() {
     this.app = express();
     this.httpServer = createServer(this.app);
-    this.io = new Server(this.httpServer);
+    this.io = new Server(this.httpServer,{
+      cors: {
+        origin: CLIENT_HOST
+      }
+    });
     this.middleware();
     this.routes();
     this.socket();
