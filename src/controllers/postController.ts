@@ -66,9 +66,11 @@ class PostController {
         }
         return decoded;
       }) as unknown as unknown as { id: string };
-      const posts = await Post.find({ user: userId?.id }).sort({
-        createdAt: -1,
-      });
+      const posts = await Post.find({ user: userId?.id })
+        .sort({
+          createdAt: -1,
+        })
+        .populate("user");
       res.status(200).send({ posts, totalCount: posts.length });
     } catch (error: Error | any) {
       res.status(400).send(error.message);
@@ -170,7 +172,6 @@ class PostController {
     next: NextFunction
   ) => {
     try {
-      
       const post = await Post.findByIdAndDelete(req.params.postId);
 
       res.status(200).send(post?._id);
